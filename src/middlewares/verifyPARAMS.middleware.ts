@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from "express";
-import { ParamsVerify } from "../utils/types/params";
 import { LoggerUtil } from "../utils/logger/Logger.util";
 
 export class VerifyParamsMiddleware {
@@ -7,8 +6,11 @@ export class VerifyParamsMiddleware {
     req: Request,
     res: Response,
     next: NextFunction,
-    typeParams: ParamsVerify
+    typeParams: 'S' | 'N' 
+    // S = STRING 
+    // N = NUMBER
   ) {
+    typeParams.toUpperCase()
     const reqParam: Object | undefined = req.params;
     const keys: string[] = Object.keys(reqParam);
     let param;
@@ -19,7 +21,7 @@ export class VerifyParamsMiddleware {
         .json({ message: "Parametros não enviados", statusCode: 400 });
     }
 
-    if (typeof typeParams.type === "number") {
+    if (typeParams === "N") {
       try {
         const key: string = keys[0];
         if (!(key in reqParam!)) {
@@ -37,7 +39,7 @@ export class VerifyParamsMiddleware {
       } catch (e: any) {
         if (e instanceof TypeError) {
           res.status(400).json({
-            message: `Error. O sistema espera um parâmetro do tipo ${typeof typeParams.type}`,
+            message: `Error. O sistema espera um parâmetro do tipo ${typeParams == 'N' ? 'NUMBER' : 'STRING'}`,
             statusCode: 400,
           });
         }

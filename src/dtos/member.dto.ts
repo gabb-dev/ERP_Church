@@ -1,13 +1,11 @@
 import {
-  Equals,
-  IsArray,
   IsDateString,
   IsEmail,
   IsNumberString,
   IsString,
 } from "class-validator";
 import { address } from "../types/address";
-import { MinistryEntity } from "../../entitys/Ministry.entity";
+import { UUID } from "node:crypto";
 
 export class MemberDTO {
   @IsString()
@@ -34,7 +32,7 @@ export class MemberDTO {
   @IsString()
   password: string;
 
-  ministrys: string[] | MinistryEntity[];
+  ministrys: Array<UUID>;
 
   address: address;
 }

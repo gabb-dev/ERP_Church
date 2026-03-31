@@ -1,4 +1,4 @@
-import { logger } from "./logger.config";
+import { logger } from "../../config/pino/logger.config";
 
 export class LoggerUtil {
   static info(msg: string) {

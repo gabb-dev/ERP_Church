@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { MinistryService } from "../services/ministry.service";
-import { MinistryEntity } from "../entitys/Ministry.entity";
-import { InternalRes } from "../utils/types/internalRes";
+import { InternalRes } from "../types/internalRes";
 
 export class MinistryController {
   constructor(private readonly ministryService: MinistryService) {}
@@ -9,7 +8,6 @@ export class MinistryController {
   async create(
     req: Request,
     res: Response,
-    next?: NextFunction
   ): Promise<Response> {
     const resService: InternalRes = await this.ministryService.create(req.body);
 

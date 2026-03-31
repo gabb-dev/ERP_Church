@@ -1,48 +1,40 @@
 import { NextFunction, Request, Response, Router } from "express";
-import { Routes } from "../utils/interfaces/routes.interface";
-import { endPoits } from "../utils/types/endPoints";
+import { Routes } from "../interfaces/routes.interface";
 import { MembersController } from "../controllers/members.controller";
 import { VerifyDtoMiddleware } from "../middlewares/verifyDTO.middleware";
-import { MemberDTO } from "../utils/dtos/member.dto";
+import { MemberDTO } from "../dtos/member.dto";
 import { VerifyParamsMiddleware } from "../middlewares/verifyPARAMS.middleware";
 
-export class UsersRouter implements Routes {
+// CORRIGIR ENDPOITS DE ACORDO COM RESTFULL
+export class MembersRouter implements Routes {
   constructor(
     private router: Router,
     private readonly membersController: MembersController,
-    readonly endPoints: endPoits = {
-      get: ["/", "/:uuid"],
-      post: ["/create"],
-      path: [],
-      delete: [],
-    }
   ) {}
 
   routing(): void {
-    this.router.get(this.endPoints.get[0], this.findAll.bind(this));
+    this.router.get("/", this.findAll.bind(this));
 
     this.router.get(
-      this.endPoints.get[1],
+      "/:uuid",
       (req: Request, res: Response, next: NextFunction) =>
-        VerifyParamsMiddleware.verifyParams(req, res, next, {
-          type: "",
-        }),
-      this.findOne.bind(this)
+        VerifyParamsMiddleware.verifyParams(req, res, next, "S"),
+      this.findOne.bind(this),
     );
 
     this.router.post(
-      this.endPoints.post[0],
+      "/create",
       (req: Request, res: Response, next: NextFunction) => {
         VerifyDtoMiddleware.verifyDTO(req, res, next, MemberDTO);
       },
-      this.create.bind(this)
+      this.create.bind(this),
     );
   }
 
   private async findAll(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     await this.membersController.findAll(req, res);
   }
@@ -50,7 +42,7 @@ export class UsersRouter implements Routes {
   private async findOne(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     await this.membersController.findOne(req, res);
   }
@@ -58,7 +50,7 @@ export class UsersRouter implements Routes {
   private async create(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     await this.membersController.create(req, res);
   }

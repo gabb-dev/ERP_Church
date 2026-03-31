@@ -1,58 +1,72 @@
-import { stringify } from "node:querystring";
 import { MemberEntity } from "../entitys/Member.entity";
-import { MinistryEntity } from "../entitys/Ministry.entity";
-import { MembersModel } from "../models/members.model";
-import { MinistryModel } from "../models/ministry.model";
-import { MemberDTO } from "../utils/dtos/member.dto";
+import { MembersRepository } from "../repositories/members.repository";
+import { MinistryRepository } from "../repositories/ministry.repository";
+import { MemberDTO } from "../dtos/member.dto";
 import { LoggerUtil } from "../utils/logger/Logger.util";
-import { InternalRes } from "../utils/types/internalRes";
+import { InternalRes } from "../types/internalRes";
 
 export class MembersSerice {
   constructor(
-    private readonly membersModel: MembersModel,
-    private readonly ministryModel: MinistryModel
+    private readonly membersRepository: MembersRepository,
+    private readonly ministryRepository: MinistryRepository,
   ) {}
 
-  async create(memberDTO: MemberDTO): Promise<InternalRes> {
+  async create(member: MemberDTO): Promise<InternalRes> {
     LoggerUtil.info("USER SERVICE --> Criando o usuário...");
 
-    const ministrys: Array<MinistryEntity> = memberDTO.ministrys.map((value): MinistryEntity | null => {
-      if (typeof value !== "string") return null
-      const ministry: Promise<InternalRes> = this.ministryModel.findMinistrys([value])
-        .then((value) => {
-          if (!value.status) return null
-          return value.data
-        })
-      return null
-    }).filter((ministry) => ministry !== null)
+    const newMember: MemberEntity = {
+      full_name: member.full_name,
+      social_name: member.social_name,
+      date_birth: member.date_birth,
+      date_baptism: member.date_baptism,
+      sex: member.sex,
+      telephone: member.telephone,
+      email: member.email,
+      passwordHash: member.password, // VERIFICAR DEPOIS
+      address: member.address,
+      ministrys: [],
+    };
 
-    memberDTO.ministrys = ministrys
-    const repositoryResponse: InternalRes = await this.membersModel.create(
-      memberDTO
-    );
+    if (member.ministrys.length != 0) {
+      const ministryRes: InternalRes =
+        await this.ministryRepository.findMinistrys(member.ministrys);
 
-    repositoryResponse.status
+      if (!ministryRes.status) {
+        LoggerUtil.error("USER SERVICE -> Error ao procurar ministérios");
+      }
+    }
+
+    // LOGICA A CONCERTA (NAO DEVO ENVIAR O DTO)
+    const memberRes: InternalRes =
+      await this.membersRepository.create(newMember);
+
+    memberRes.status
       ? LoggerUtil.info(`USER SERVICE --> Usuário criado!`)
       : LoggerUtil.error("USER SERVICE --> ERROR ao criar usuário");
 
-    return { status: true };
+    return { status: true, message: "OK", data: newMember };
   }
 
   async findAll(): Promise<InternalRes> {
     LoggerUtil.info("USER SERVICE --> Consultando banco...");
-    const response: InternalRes = await this.membersModel.findAll();
+    const response: InternalRes = await this.membersRepository.findAll();
+
+    if (!response.status)
+      return { status: false, error: new Error("Nenhum usuário encontrado") };
+
     const members: MemberEntity[] = await response.data;
 
-    return { status: true, data: members };
+    return { status: true, data: members, message: "OK" };
   }
 
-  async findOne(uuid: string): Promise<null | MemberEntity> {
-    const member: InternalRes = await this.membersModel.findOne(uuid);
+  async findOne(uuid: string): Promise<InternalRes> {
+    const member: InternalRes = await this.membersRepository.findOne(uuid);
 
     if (member.status) {
       member.data.address = JSON.parse(member.data.address);
+      return { status: true, data: member.data, message: "OK" };
     }
 
-    return member.data;
+    return { status: false, error: new Error("Nenhum usuário encontrado") };
   }
 }
