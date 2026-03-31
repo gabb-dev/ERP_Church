@@ -1,33 +1,27 @@
 import { NextFunction, Request, Response, Router } from "express";
-import { Routes } from "../utils/interfaces/routes.interface";
-import { endPoits } from "../utils/types/endPoints";
+import { Routes } from "../interfaces/routes.interface";
 import { MinistryController } from "../controllers/ministry.controller";
 import { VerifyDtoMiddleware } from "../middlewares/verifyDTO.middleware";
-import { MinistryDTO } from "../utils/dtos/ministry.dto";
+import { MinistryDTO } from "../dtos/ministry.dto";
 
+// CORRIGIR ENDPOINTS DE ACORDO COM RESTFULL
 export class MinistryRouter implements Routes {
   constructor(
     private readonly router: Router,
     private readonly ministryController: MinistryController,
-    readonly endPoints: endPoits = {
-      get: { findAll: "/", findOne: "/:uuid" },
-      post: { create: "/create" },
-      path: [],
-      delete: [],
-    }
   ) {}
 
   routing(): void {
     this.router.post(
-      this.endPoints.post.create,
+      "/create",
       (req: Request, res: Response, next: NextFunction) => {
         VerifyDtoMiddleware.verifyDTO(req, res, next, MinistryDTO);
       },
       this.create.bind(this)
     );
 
-    this.router.get(this.endPoints.get.findAll, this.findAll.bind(this));
-    this.router.get(this.endPoints.get.finOne, this.findOne.bind(this));
+    this.router.get("/", this.findAll.bind(this));
+    this.router.get("/:uuid", this.findOne.bind(this));
   }
 
   getRouter(): Router {

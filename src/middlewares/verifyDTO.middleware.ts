@@ -8,7 +8,7 @@ export class VerifyDtoMiddleware {
     req: Request,
     res: Response,
     next: NextFunction,
-    dto: any
+    dto: any,
   ) {
     const body: undefined | Object = req.body;
     let errors: ValidationError[] = [];
@@ -16,8 +16,8 @@ export class VerifyDtoMiddleware {
     if (!body) {
       LoggerUtil.debug("Body da requisição não enviado para o middleware");
       return res
-        .status(403)
-        .json({ message: "Error. body não enviado", stausCode: 403 });
+        .status(400)
+        .json({ message: "Error. body não enviado", stausCode: 400 });
     }
 
     try {
@@ -32,7 +32,7 @@ export class VerifyDtoMiddleware {
       }
 
       LoggerUtil.error(
-        "Error no middleware: VerifyDtoMiddleware (Body inválido)"
+        "Error no middleware: VerifyDtoMiddleware (Body inválido)",
       );
 
       return res

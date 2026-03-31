@@ -1,35 +1,26 @@
 import { DataSource, Repository } from "typeorm";
 import { MemberEntity } from "../entitys/Member.entity";
-import { MemberDTO } from "../utils/dtos/member.dto";
 import { LoggerUtil } from "../utils/logger/Logger.util";
-import { InternalRes } from "../utils/types/internalRes";
-import { MinistryModel } from "./ministry.model";
-import { MinistryEntity } from "../entitys/Ministry.entity";
+import { InternalRes } from "../types/internalRes";
+import { MemberModel } from "../models/Member.model";
 
-export class MembersModel {
+export class MembersRepository {
   constructor(
     private readonly dataSource: DataSource,
-    private readonly memberRepository: Repository<MemberEntity> = dataSource.getRepository(MemberEntity),
+    private readonly memberRepository: Repository<MemberModel> = dataSource.getRepository(
+      MemberModel,
+    ),
   ) {}
 
-  async create(member: MemberDTO): Promise<InternalRes> {
-    
-    try {
-      for (let object of member.ministrys) {
-        if (!(object instanceof MinistryEntity)) throw new Error("Ministério inválido")
-      }
-    } catch (e: any) {
-      return { status: false, error: e }
-    }
-
-    const newMember: MemberEntity = {
+  async create(member: MemberEntity): Promise<InternalRes> {
+    const newMember: MemberModel = {
       uuid: crypto.randomUUID(),
       full_name: member.full_name,
       social_name: member.social_name,
       date_birth: member.date_birth,
       sex: member.sex,
       email: member.email,
-      passwordHash: member.password,
+      passwordHash: member.passwordHash,
       telephone: member.telephone,
       address: JSON.stringify(member.address),
       date_baptism: member.date_baptism,
@@ -39,10 +30,10 @@ export class MembersModel {
     };
 
     try {
-      this.memberRepository.save(newMember);
+      await this.memberRepository.save(newMember);
 
       LoggerUtil.info(`MODEL --> Usuário cadastrado!`);
-      return { status: true };
+      return { status: true, data: newMember, message: "Criado" };
     } catch (e: any) {
       LoggerUtil.error(`MODEL --> Error ao cadastrar o usuário ${e}`);
       return { status: false, error: e };
@@ -51,24 +42,27 @@ export class MembersModel {
 
   async findAll(): Promise<InternalRes> {
     try {
-      const users: MemberEntity[] = await this.memberRepository.find({
+      const users: MemberModel[] = await this.memberRepository.find({
         relations: ["ministry"],
       });
 
       users.map((value) => (value.address = JSON.parse(value.address)));
 
-      return { status: true, data: users };
+      return { status: true, data: users, message: "OK" };
     } catch (e) {
       LoggerUtil.error(
-        `USER MODEL --> ERROR ao tentar buscar todos os usuários do banco de dados: ${e}`
+        `USER MODEL --> ERROR ao tentar buscar todos os usuários do banco de dados: ${e}`,
       );
-      return { status: false };
+      return {
+        status: false,
+        error: new Error("Não foi possível achar os usuários"),
+      };
     }
   }
 
   async findOne(uuid: string): Promise<InternalRes> {
     try {
-      const member: null | MemberEntity = await this.memberRepository.findOne({
+      const member: null | MemberModel = await this.memberRepository.findOne({
         where: { uuid: uuid },
         relations: ["ministry"],
         select: { ministry: true },
@@ -76,7 +70,7 @@ export class MembersModel {
 
       if (!member) throw Error("Usuário nao encontrado");
 
-      return { status: true, data: member };
+      return { status: true, data: member, message: "OK" };
     } catch (e: any) {
       LoggerUtil.error(`MEMBERS REPOSITORY --> ERROR: ${e.message}`);
       return { status: false, error: e.message };

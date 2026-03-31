@@ -1,57 +1,82 @@
-import { min } from "class-validator";
 import { MinistryEntity } from "../entitys/Ministry.entity";
-import { MinistryModel } from "../models/ministry.model";
-import { MinistryDTO } from "../utils/dtos/ministry.dto";
+import { MinistryRepository } from "../repositories/ministry.repository";
+import { MinistryDTO } from "../dtos/ministry.dto";
 import { LoggerUtil } from "../utils/logger/Logger.util";
-import { InternalRes } from "../utils/types/internalRes";
-import { MembersModel } from "../models/members.model";
+import { InternalRes } from "../types/internalRes";
+import { MembersRepository } from "../repositories/members.repository";
 import { MemberEntity } from "../entitys/Member.entity";
 
 export class MinistryService {
   constructor(
-    private readonly ministryModel: MinistryModel,
-    private readonly memberModel: MembersModel
+    private readonly ministryRepository: MinistryRepository,
+    private readonly memberRepository: MembersRepository,
   ) {}
 
-  async create(dto: MinistryDTO): Promise<InternalRes> {
+  async create(ministryDto: MinistryDTO): Promise<InternalRes> {
+    if (typeof ministryDto.lead_ministry !== "string")
+      return {
+        status: false,
+        error: new Error("Líder de ministério inválido (espera-se uma string)"),
+      };
 
-    if (typeof dto.lead_ministry !== "string") return { status: false, error: new Error("Líder de ministério inválido (espera-se uma string)") }
+    const memberRes: InternalRes = await this.memberRepository.findOne(
+      ministryDto.lead_ministry,
+    );
 
-    const member_lead: InternalRes = await this.memberModel.findOne(dto.lead_ministry)
+    if (!memberRes.status) {
+      return { status: false, error: memberRes.error };
+    }
 
-    if (!member_lead.status) {
-      return { status: false, error: member_lead.error }
-    } 
-    dto.lead_ministry = member_lead.data  
+    const lead_ministry: MemberEntity = memberRes.data;
+    const newMinistry: MinistryEntity = {
+      lead_ministry: lead_ministry,
+      name: ministryDto.name,
+      branch: ministryDto.branch,
+      members: [],
+    };
 
     LoggerUtil.info("MINISTRY SERVICE --> Acessando o MINISTRY MODEL...");
-    const repositoryResponse: InternalRes = await this.ministryModel.create(dto);
+    const repositoryResponse: InternalRes =
+      await this.ministryRepository.create(newMinistry);
 
     repositoryResponse.status
       ? LoggerUtil.debug(`MINISTRY SERVICE --> Ministério cadastrado!`)
       : LoggerUtil.error(
-          "MINISTRY SERVICE --> Error ao cadastrar o ministério"
+          "MINISTRY SERVICE --> Error ao cadastrar o ministério",
         );
 
-    return { status: repositoryResponse.status };
+    if (!repositoryResponse.status) {
+      return { status: false, error: new Error("Error ao criar o ministério") };
+    }
+
+    return { status: true, data: newMinistry, message: "Criado" };
   }
 
   async findAll(): Promise<InternalRes> {
-    const repositoryResponse: InternalRes = await this.ministryModel.findAll();
+    const repositoryResponse: InternalRes =
+      await this.ministryRepository.findAll();
 
     if (!repositoryResponse.status) {
-      return { status: false, data: null, error: new Error("Nenhum ministério encontrado") };
+      return {
+        status: false,
+        error: new Error("Nenhum ministério encontrado"),
+      };
     }
 
-    return { status: true, data: repositoryResponse.data };
+    return { status: true, data: repositoryResponse.data, message: "OK" };
   }
 
   async findOne(uuid: string): Promise<InternalRes> {
-    const resModel: InternalRes = await this.ministryModel.findMinistrys([uuid]);
+    const ministryRes: InternalRes =
+      await this.ministryRepository.findMinistrys([uuid]);
     let ministry: MinistryEntity | null;
 
-    resModel.status ? (ministry = resModel.data) : (ministry = null);
+    ministryRes.status ? (ministry = ministryRes.data) : (ministry = null);
 
-    return { status: resModel.status, data: ministry };
+    if (ministryRes.status) {
+      return { status: true, data: ministry, message: "OK" };
+    }
+
+    return { status: false, error: ministryRes.error };
   }
 }

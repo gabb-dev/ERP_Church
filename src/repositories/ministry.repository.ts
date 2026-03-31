@@ -1,32 +1,29 @@
 import { DataSource, Repository } from "typeorm";
-import { MinistryDTO } from "../utils/dtos/ministry.dto";
 import { MinistryEntity } from "../entitys/Ministry.entity";
-import { InternalRes } from "../utils/types/internalRes";
+import { InternalRes } from "../types/internalRes";
 import { LoggerUtil } from "../utils/logger/Logger.util";
 
-import { MemberEntity } from "../entitys/Member.entity";
+import { MinistryModel } from "../models/Ministry.model";
 
-export class MinistryModel {
+export class MinistryRepository {
   constructor(
     private readonly dataSource: DataSource,
-    private readonly ministryRepository: Repository<MinistryEntity> = dataSource.getRepository(MinistryEntity),
+    private readonly ministryRepository: Repository<MinistryEntity> = dataSource.getRepository(
+      MinistryEntity,
+    ),
   ) {}
 
-  async create(ministryDTO: MinistryDTO): Promise<InternalRes> {
+  async create(ministryEntity: MinistryEntity): Promise<InternalRes> {
     try {
-      if (!(ministryDTO.lead_ministry instanceof MemberEntity)) {
-        throw Error("Ministro inválido (espera-se uma instância de MemberEntity)")
-      }
-    
-    const ministry: MinistryEntity = {
-      uuid: crypto.randomUUID(),
-      name: ministryDTO.name,
-      lead_ministry: ministryDTO.lead_ministry,
-      members: [ministryDTO.lead_ministry],
-      branch: ministryDTO.branch,
-    };
-      await this.ministryRepository.save(ministry);
-      return { status: true };
+      const newMinistry: MinistryModel = {
+        uuid: crypto.randomUUID(),
+        name: ministryEntity.name,
+        lead_ministry: ministryEntity.lead_ministry,
+        members: [], // VERIFICAR SE FOI ENVIADO MEMBROS
+        branch: ministryEntity.branch,
+      };
+      await this.ministryRepository.save(newMinistry);
+      return { status: true, message: "Criado", data: [] };
     } catch (e: any) {
       LoggerUtil.error(`MINISTRY MODEL --> Error ao salvar o ministério: ${e}`);
       return { status: false, error: e };
@@ -57,11 +54,14 @@ export class MinistryModel {
 
     if (ministrys.length === 0) {
       LoggerUtil.info("MINISTRY MODEL --> Nenhum ministério achado");
-      return { status: false, error: new Error("Nenhum ministério encontrado") };
+      return {
+        status: false,
+        error: new Error("Nenhum ministério encontrado"),
+      };
     }
 
     LoggerUtil.info("MISTRY MODEL --> Ministérios encontrados!");
-    return { status: true, data: ministrys };
+    return { status: true, data: ministrys, message: "OK" };
   }
 
   async findMinistrys(uuids: string[]): Promise<InternalRes> {
@@ -86,6 +86,6 @@ export class MinistryModel {
       }
     }
 
-    return { status: true, data: ministrys };
+    return { status: true, data: ministrys, message: "OK" };
   }
 }

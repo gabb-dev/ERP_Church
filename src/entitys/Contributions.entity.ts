@@ -14,7 +14,7 @@ import { MemberEntity } from "./Member.entity";
 @Entity({ name: "offers" })
 export class ContributionsEntity {
   @PrimaryColumn()
-  uuid?: UUID;
+  uuid?: string;
 
   @Column()
   type: "dizimo" | "oferta";
