@@ -3,8 +3,9 @@ import { MemberEntity } from "../entitys/Member.entity";
 import { LoggerUtil } from "../utils/logger/Logger.util";
 import { InternalRes } from "../types/internalRes";
 import { MemberModel } from "../models/Member.model";
+import { RepositoryIF } from "../interfaces/repositorys.interface";
 
-export class MembersRepository {
+export class MembersRepository implements RepositoryIF<MemberEntity> {
   constructor(
     private readonly dataSource: DataSource,
     private readonly memberRepository: Repository<MemberModel> = dataSource.getRepository(
@@ -75,5 +76,9 @@ export class MembersRepository {
       LoggerUtil.error(`MEMBERS REPOSITORY --> ERROR: ${e.message}`);
       return { status: false, error: e.message };
     }
+  }
+
+  update(data: string): Promise<InternalRes> {
+    throw new Error("Method not implemented.");
   }
 }

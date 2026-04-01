@@ -4,14 +4,18 @@ import { InternalRes } from "../types/internalRes";
 import { LoggerUtil } from "../utils/logger/Logger.util";
 
 import { MinistryModel } from "../models/Ministry.model";
+import { RepositoryIF } from "../interfaces/repositorys.interface";
 
-export class MinistryRepository {
+export class MinistryRepository implements RepositoryIF<MinistryEntity> {
   constructor(
     private readonly dataSource: DataSource,
     private readonly ministryRepository: Repository<MinistryEntity> = dataSource.getRepository(
       MinistryEntity,
     ),
   ) {}
+  findOne(data: string): Promise<InternalRes> {
+    throw new Error("Method not implemented.");
+  }
 
   async create(ministryEntity: MinistryEntity): Promise<InternalRes> {
     try {
@@ -87,5 +91,9 @@ export class MinistryRepository {
     }
 
     return { status: true, data: ministrys, message: "OK" };
+  }
+
+  async update(data: string): Promise<InternalRes> {
+    return { status: false, error: new Error() };
   }
 }

@@ -4,8 +4,9 @@ import { MinistryRepository } from "../repositories/ministry.repository";
 import { MemberDTO } from "../dtos/member.dto";
 import { LoggerUtil } from "../utils/logger/Logger.util";
 import { InternalRes } from "../types/internalRes";
+import { ServicesIF } from "../interfaces/services.interface";
 
-export class MembersSerice {
+export class MembersSerice implements ServicesIF<MemberDTO> {
   constructor(
     private readonly membersRepository: MembersRepository,
     private readonly ministryRepository: MinistryRepository,
@@ -33,10 +34,11 @@ export class MembersSerice {
 
       if (!ministryRes.status) {
         LoggerUtil.error("USER SERVICE -> Error ao procurar ministérios");
+      } else {
+        newMember.ministrys.push(ministryRes.data);
       }
     }
 
-    // LOGICA A CONCERTA (NAO DEVO ENVIAR O DTO)
     const memberRes: InternalRes =
       await this.membersRepository.create(newMember);
 

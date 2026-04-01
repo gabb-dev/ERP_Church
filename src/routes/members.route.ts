@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response, Router } from "express";
-import { Routes } from "../interfaces/routes.interface";
+import { RoutesIF } from "../interfaces/routes.interface";
 import { MembersController } from "../controllers/members.controller";
 import { VerifyDtoMiddleware } from "../middlewares/verifyDTO.middleware";
 import { MemberDTO } from "../dtos/member.dto";
 import { VerifyParamsMiddleware } from "../middlewares/verifyPARAMS.middleware";
 
 // CORRIGIR ENDPOITS DE ACORDO COM RESTFULL
-export class MembersRouter implements Routes {
+export class MembersRouter implements RoutesIF {
   constructor(
     private router: Router,
     private readonly membersController: MembersController,
@@ -18,14 +18,14 @@ export class MembersRouter implements Routes {
     this.router.get(
       "/:uuid",
       (req: Request, res: Response, next: NextFunction) =>
-        VerifyParamsMiddleware.verifyParams(req, res, next, "S"),
+        VerifyParamsMiddleware.verify(req, res, next, "S"),
       this.findOne.bind(this),
     );
 
     this.router.post(
-      "/create",
+      "/",
       (req: Request, res: Response, next: NextFunction) => {
-        VerifyDtoMiddleware.verifyDTO(req, res, next, MemberDTO);
+        VerifyDtoMiddleware.verify(req, res, next, MemberDTO);
       },
       this.create.bind(this),
     );

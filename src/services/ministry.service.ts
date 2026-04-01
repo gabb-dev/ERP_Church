@@ -5,8 +5,9 @@ import { LoggerUtil } from "../utils/logger/Logger.util";
 import { InternalRes } from "../types/internalRes";
 import { MembersRepository } from "../repositories/members.repository";
 import { MemberEntity } from "../entitys/Member.entity";
+import { ServicesIF } from "../interfaces/services.interface";
 
-export class MinistryService {
+export class MinistryService implements ServicesIF<MinistryDTO> {
   constructor(
     private readonly ministryRepository: MinistryRepository,
     private readonly memberRepository: MembersRepository,

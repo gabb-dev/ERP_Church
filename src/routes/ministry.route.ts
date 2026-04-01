@@ -1,11 +1,11 @@
 import { NextFunction, Request, Response, Router } from "express";
-import { Routes } from "../interfaces/routes.interface";
+import { RoutesIF } from "../interfaces/routes.interface";
 import { MinistryController } from "../controllers/ministry.controller";
 import { VerifyDtoMiddleware } from "../middlewares/verifyDTO.middleware";
 import { MinistryDTO } from "../dtos/ministry.dto";
 
 // CORRIGIR ENDPOINTS DE ACORDO COM RESTFULL
-export class MinistryRouter implements Routes {
+export class MinistryRouter implements RoutesIF {
   constructor(
     private readonly router: Router,
     private readonly ministryController: MinistryController,
@@ -15,9 +15,9 @@ export class MinistryRouter implements Routes {
     this.router.post(
       "/create",
       (req: Request, res: Response, next: NextFunction) => {
-        VerifyDtoMiddleware.verifyDTO(req, res, next, MinistryDTO);
+        VerifyDtoMiddleware.verify(req, res, next, MinistryDTO);
       },
-      this.create.bind(this)
+      this.create.bind(this),
     );
 
     this.router.get("/", this.findAll.bind(this));
