@@ -4,7 +4,7 @@ import { address } from "../types/address";
 import { UUID } from "node:crypto";
 
 export class MemberEntity {
-  uuid?: UUID;
+  uuid?: string;
 
   full_name: string;
 

@@ -4,7 +4,7 @@ import { validate, ValidationError } from "class-validator";
 import { LoggerUtil } from "../utils/logger/Logger.util";
 
 export class VerifyDtoMiddleware {
-  static async verifyDTO(
+  static async verify(
     req: Request,
     res: Response,
     next: NextFunction,

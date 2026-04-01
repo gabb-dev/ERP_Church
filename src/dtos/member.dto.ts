@@ -32,7 +32,7 @@ export class MemberDTO {
   @IsString()
   password: string;
 
-  ministrys: Array<UUID>;
+  ministrys: string[];
 
   address: address;
 }

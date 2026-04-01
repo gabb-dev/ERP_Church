@@ -2,15 +2,15 @@ import { NextFunction, Request, Response } from "express";
 import { LoggerUtil } from "../utils/logger/Logger.util";
 
 export class VerifyParamsMiddleware {
-  static verifyParams(
+  static verify(
     req: Request,
     res: Response,
     next: NextFunction,
-    typeParams: 'S' | 'N' 
-    // S = STRING 
+    typeParams: "S" | "N",
+    // S = STRING
     // N = NUMBER
   ) {
-    typeParams.toUpperCase()
+    typeParams.toUpperCase();
     const reqParam: Object | undefined = req.params;
     const keys: string[] = Object.keys(reqParam);
     let param;
@@ -39,7 +39,7 @@ export class VerifyParamsMiddleware {
       } catch (e: any) {
         if (e instanceof TypeError) {
           res.status(400).json({
-            message: `Error. O sistema espera um parâmetro do tipo ${typeParams == 'N' ? 'NUMBER' : 'STRING'}`,
+            message: `Error. O sistema espera um parâmetro do tipo ${typeParams == "N" ? "NUMBER" : "STRING"}`,
             statusCode: 400,
           });
         }

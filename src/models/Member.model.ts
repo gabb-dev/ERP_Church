@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 import { MinistryModel } from "./Ministry.model";
+import { ContributionsModel } from "./Contribution.model";
 
 @Entity({ name: "members" })
 export class MemberModel {
@@ -54,6 +55,8 @@ export class MemberModel {
 
   @Column({ type: "date" })
   date_baptism: Date;
+
+  contributions?: ContributionsModel[];
 
   @CreateDateColumn()
   creatAt?: Date;
