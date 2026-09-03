@@ -106,9 +106,9 @@ Entity (Banco de dados)
 - Pipes customizados validam parâmetros e corpo das requisições
 - Erros de validação retornam status 400
 
-## Logging
+## Logs
 
-Logging estruturado com Pino:
+Logs estruturados com Pino:
 - `DEBUG` - Informações de debug
 - `INFO` - Informações operacionais
 - `ERROR` - Erros capturados
